@@ -6,10 +6,16 @@ CONFIG -= qt
 SOURCES += main.cpp \
     user.cpp \
     animal.cpp \
-    dog.cpp
+    dog.cpp \
+    cmd.cpp \
+    static_class.cpp
 
 HEADERS += \
     user.h \
     animal.h \
-    dog.h
+    dog.h \
+    utility.h \
+    static_class.h \
+    mytest.h \
+    test_basic.h
 
