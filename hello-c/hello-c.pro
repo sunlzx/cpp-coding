@@ -7,18 +7,27 @@ TARGET = hello-c
 INCLUDEPATH += .
 
 # Input
-HEADERS += epoll_test.h func_test.h mylib.h
+HEADERS += epoll_test.h func_test.h mylib.h \
+    longjmp_test.h
 SOURCES += cunit.c \
            epoll-example.c \
            epoll_test.c \
            func_test.c \
            main.c \
            main1.c \
-           mylib.c
+           mylib.c \
+    longjmp_test.c \
+    server.c \
+    client.c \
+    error.c \
+    select_demo.c \
+    poll_demo.c \
+    poll_server.c \
+    poll_client.c
 
 unix:!macx: LIBS += -lcunit
 
-unix:!macx: LIBS += -L$$PWD/ -lmy
+#unix:!macx: LIBS += -L$$PWD/ -lmy
 
-INCLUDEPATH += $$PWD/
-DEPENDPATH += $$PWD/
+#INCLUDEPATH += $$PWD/
+#DEPENDPATH += $$PWD/

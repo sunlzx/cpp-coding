@@ -4,7 +4,9 @@
 #include <string>
 #include <iostream>
 
-class User
+#include "object.h"
+
+class User:public Object
 {
     int id;
     std::string name;
@@ -14,6 +16,20 @@ public:
     User(int id, std::string name);
     ~User();
     void show();
+
+    virtual int hashCode();
+
+
+//    Number& operator++ ();     // prefix ++: no parameter, returns a reference
+//    Number  operator++ (int);  // postfix ++: dummy parameter, returns a value
+
+    User& operator ++();// prefix ++
+    User operator ++(int);// postfix ++
+
+    User operator +(User);
+
+
+
 };
 
 #endif // USER_H

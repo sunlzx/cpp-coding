@@ -1,0 +1,218 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <assert.h>
+#include <pthread.h>
+#include <unistd.h>
+
+#include "tpool.h"
+
+pthread_mutex_t mutex;
+pthread_cond_t conf_full;
+
+size_t concurrent = 0;
+
+void inc_concurrent_conut(int max)
+{
+    pthread_mutex_lock(&mutex);
+    concurrent++;
+    while(concurrent >=  max)
+    {
+        pthread_cond_wait(&conf_full, &mutex);
+    }
+    pthread_mutex_unlock(&mutex);
+}
+
+void dec_concurrent_conut(void)
+{
+    pthread_mutex_lock(&mutex);
+    concurrent--;
+    pthread_cond_signal(&conf_full);
+    pthread_mutex_unlock(&mutex);
+}
+
+
+
+/**
+* @brief exec_cmd
+* @param cmd
+* @param result
+* @return
+*/
+int exec_cmd(const char *cmd, char *result, int max)
+{
+    int status = -1;
+    char buf_ps[1024];
+    char ps[1024]={0};
+    FILE *ptr;
+    strcpy(ps, cmd);
+    if((ptr=popen(ps, "r"))!=NULL)
+    {
+        while(fgets(buf_ps, 1024, ptr)!=NULL)
+        {
+            strcat(result, buf_ps);
+            if(strlen(result)> max)
+                break;
+        }
+        status = pclose(ptr);
+        ptr = NULL;
+    }
+    else
+    {
+        printf("popen %s error\n", ps);
+    }
+    return status;
+}
+
+int exec_cmd2(const char *cmd, char **result_pp)
+{
+    assert(cmd);
+    assert(result_pp);
+
+    int status = -1;
+    char buf_ps[1024];
+    //    char ps[1024]={0};
+    //    strcpy(ps, cmd);
+    FILE *ptr;
+
+    int init_size = 1024;
+    int len = init_size;
+
+//    char *result = (char*)malloc(init_size);
+//    bzero(result, init_size);
+
+    char *result = (char*)calloc(sizeof(char),init_size);
+
+
+    *result_pp = result;
+
+
+    if((ptr=popen(cmd, "r"))!=NULL)
+    {
+        while(fgets(buf_ps, 1024, ptr)!=NULL)
+        {
+            int str_len = strlen(buf_ps) + strlen(result);
+            if(str_len >= len - 1)
+            {
+                result = (char*)realloc(result, len * 2);
+                *result_pp = result;
+                len = len * 2;
+            }
+
+            strcat(result, buf_ps);
+            bzero(buf_ps, 1024);
+        }
+        status = pclose(ptr);
+        ptr = NULL;
+    }
+    else
+    {
+        printf("popen %s error\n", cmd);
+    }
+    return status;
+}
+
+void execute(const char *cmd)
+{
+    int addr;
+    int status = exec_cmd2(cmd, &addr);
+    printf("exec cmd: %s, len: %d \n", cmd, strlen(addr));
+    printf("cmd result, status: %d \nresult: \n %s", status, addr);
+    free(addr);
+    dec_concurrent_conut();
+}
+
+void pool_execute(const char *cmd)
+{
+    char *result;
+    int status = exec_cmd2(cmd, &result);
+    printf("cmd: %s, len: %d \n", cmd, strlen(result));
+//    printf("cmd result, status: %d \nresult: \n%s", status, result);
+    free(result);
+    result = NULL;
+}
+
+/**
+ * @brief main
+ * @param argc
+ * @param argv
+ *      argv[0]:cmd
+ *      argv[1]:exec times
+ * @return
+ */
+int main(int argc, int *argv[])
+{
+    printf("Usage:./monitor cmd -n 100 -c 1\n");
+    printf("argc: %d \n", argc);
+    if (argc < 6) {
+        return;
+    }
+
+    char *cmd = argv[1];
+    int exec_times = 1;
+    int max_concurrent = 1;
+
+    int i=0;
+    for(i=2; i<argc; i+=2) {
+        if (strcmp("-c", argv[i])) {
+            exec_times = atoi(argv[i + 1]);
+        }
+        if (strcmp("-n", argv[i])) {
+            max_concurrent = atoi(argv[i + 1]);
+        }
+    }
+    printf("exec_times %d, concurrent:%d\n", exec_times, max_concurrent);
+
+
+    tpool_t thread_pool;
+    if (max_concurrent > 1) {
+        tpool_init(&thread_pool, max_concurrent, max_concurrent * 2);
+    }
+
+    struct timeval tpstart,tpend;
+    float timeuse;
+    /* start time */
+    gettimeofday(&tpstart,NULL);
+
+    for(i=0; i<exec_times; i++)
+    {
+
+        if (max_concurrent <= 1)
+        {
+//            char result[1024];
+//            bzero(result, 1024);
+//            int status = exec_cmd(cmd, result, 1024);
+//            printf("exec cmd: %s, len: %d \n", cmd, strlen(result));
+//            printf("cmd result, status: %d \nresult: \n %s", status, result);
+
+            pool_execute(cmd);
+        }
+        else {
+            //            inc_concurrent_conut(max_concurrent);
+            //            pthread_t exec_thread;
+            //            int iret1 = pthread_create(&exec_thread, NULL, execute, cmd);
+            //            pthread_join(exec_thread, NULL);
+            //            printf("Thread 1 returns: %d\n",iret1);
+
+            //            inc_concurrent_conut(max_concurrent);
+            //            pthread_t exec_thread;
+            //            pthread_create(&exec_thread, NULL, execute, cmd);
+            //            pthread_detach(exec_thread);
+
+            tpool_add_work(thread_pool, pool_execute, cmd);
+        }
+    }
+    if (max_concurrent > 1) {
+        tpool_destroy(thread_pool, 1);
+    }
+    gettimeofday(&tpend,NULL);
+    timeuse=1000000*(tpend.tv_sec-tpstart.tv_sec)+
+            tpend.tv_usec-tpstart.tv_usec;
+
+    printf("Used Time:%f\n",timeuse / 1000);
+
+    return EXIT_SUCCESS;
+}
+
+

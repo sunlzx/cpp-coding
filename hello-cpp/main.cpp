@@ -73,7 +73,9 @@ int main()
     cout << "Hello World!" << endl;
 
     //    test_template::test_template();
-    //    test_class::test_class();
+//        test_class::test_class();
+        test_class::test_virtual_func();
+//        test_class::test_animal();
     //    test_class::test_static_class();
     //    test_struct::test_struct();
 
@@ -83,7 +85,7 @@ int main()
     //    mytest1::test_algorithm();
 
     //    test_vector();
-    t_reference();
+//    t_reference();
 
     return 0;
 }

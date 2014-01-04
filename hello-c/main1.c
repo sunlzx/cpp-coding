@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include "mylib.h"
+#include <stdlib.h>
 
-int main(int argc,  char *argv[])
+int main_1(int argc,  char *argv[])
 {
     printf("argc:%d\n", argc);
     int i = 0;
@@ -12,5 +13,6 @@ int main(int argc,  char *argv[])
 
     int a = 1;
     int b = 2;
-    printf("%d + %d = %d\n", a, b, myadd(a, b));
+//    printf("%d + %d = %d\n", a, b, myadd(a, b));
+    return EXIT_SUCCESS;
 }

@@ -3,6 +3,7 @@
 
 #include <string>
 
+
 using namespace std;
 
 namespace mytest1 {
@@ -74,6 +75,8 @@ void test_algorithm()
 
 #include "animal.h"
 #include "dog.h"
+#include "user.h"
+#include "object.h"
 
 namespace test_class
 {
@@ -103,6 +106,50 @@ void test_class()
 
     cout << sizeof(user) << endl;
     cout << sizeof(dog) << " " << sizeof(a) << endl;
+    delete a;
+}
+
+
+class User2:public Object
+{
+public:
+    int hashCode()
+    {
+        return 1;
+    }
+};
+
+void test_virtual_func()
+{
+    User *user = new User(26, "sunlzx");
+    user->show();
+
+//    *user++;
+
+    User u(1, "test");
+    u.show();
+
+    (*user + u).show();
+
+    u++;
+    u.show();
+
+    ++u;
+    u.show();
+
+
+    delete user;
+    user = NULL;
+
+    User2 user2;
+    user2.hashCode();
+
+}
+
+void test_animal()
+{
+    Animal *a = new Dog();
+    a->show_name();
     delete a;
 }
 

@@ -8,7 +8,8 @@ SOURCES += main.cpp \
     animal.cpp \
     dog.cpp \
     cmd.cpp \
-    static_class.cpp
+    static_class.cpp \
+    object.cpp
 
 HEADERS += \
     user.h \
@@ -17,5 +18,6 @@ HEADERS += \
     utility.h \
     static_class.h \
     mytest.h \
-    test_basic.h
+    test_basic.h \
+    object.h
 

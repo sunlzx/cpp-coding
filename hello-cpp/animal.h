@@ -8,7 +8,7 @@ class Animal
 public:
     Animal();
 
-    void show_name();
+    virtual void show_name();
 };
 
 #endif // ANIMAL_H
